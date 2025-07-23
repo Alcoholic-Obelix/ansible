@@ -1,0 +1,29 @@
+---
+- name: Gather installed package facts
+  package_facts:
+    manager: auto
+
+- name: Install Brave Browser if missing
+  block:
+    - name: Download Brave keyring
+      get_url:
+        url: https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+        dest: /usr/share/keyrings/brave-browser-archive-keyring.gpg
+        mode: "0644"
+
+    - name: Download Brave .sources file
+      get_url:
+        url: https://brave-browser-apt-release.s3.brave.com/brave-browser.sources
+        dest: /etc/apt/sources.list.d/brave-browser-release.sources
+        mode: "0644"
+
+    - name: Update APT cache after adding Brave repo
+      apt:
+        update_cache: yes
+
+    - name: Install Brave Browser
+      apt:
+        name: brave-browser
+        state: present
+
+  when: "'brave-browser' not in ansible_facts.packages"

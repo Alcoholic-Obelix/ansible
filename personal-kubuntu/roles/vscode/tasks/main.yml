@@ -1,0 +1,19 @@
+---
+- name: Install VSCode if missing
+  block:
+    - name: Download VS Code .deb package
+      get_url:
+        url: https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64
+        dest: /tmp/vscode.deb
+        mode: "0644"
+
+    - name: Install VS Code
+      apt:
+        deb: /tmp/vscode.deb
+
+    - name: Remove the downloaded .deb file
+      file:
+        path: /tmp/vscode.deb
+        state: absent
+
+  when: "'code' not in ansible_facts.packages"

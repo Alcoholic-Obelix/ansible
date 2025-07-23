@@ -1,0 +1,52 @@
+---
+- name: Check if Node.js {{node_version}} is already installed via NVM
+  become_user: "{{ target_user }}"
+  shell: |
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    nvm ls {{node_version}} | grep -q 'v{{node_version}}.' && echo 'installed' || echo 'missing'
+  args:
+    executable: /bin/bash
+  register: node_check
+  changed_when: false
+
+- name: Install Node if missing
+  block:
+    - name: Ensure curl is installed
+      apt:
+        name: curl
+        state: present
+
+    - name: Install NVM for the user
+      become_user: "{{ target_user }}"
+      shell: |
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+      args:
+        creates: "/home/{{ target_user }}/.nvm/nvm.sh"
+
+    - name: Install Node.js {{node_version}} via NVM
+      become_user: "{{ target_user }}"
+      shell: |
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+        nvm install {{node_version}}
+        nvm alias default {{node_version}}
+      args:
+        executable: /bin/bash
+      environment:
+        NVM_DIR: "/home/{{ target_user }}/.nvm"
+
+    - name: Confirm Node.js version
+      become_user: "{{ target_user }}"
+      shell: |
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+        node -v
+      args:
+        executable: /bin/bash
+      register: node_version_installed
+
+    - debug:
+        msg: "Node.js version installed: {{ node_version_installed.stdout }}"
+
+  when: "'missing' in node_check.stdout"

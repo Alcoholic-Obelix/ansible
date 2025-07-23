@@ -1,0 +1,32 @@
+---
+- name: Install Signal Desktop if missing
+  block:
+    - name: Download Signal official signing key
+      get_url:
+        url: https://updates.signal.org/desktop/apt/keys.asc
+        dest: /tmp/signal-desktop-keys.asc
+        mode: "0644"
+
+    - name: Convert signing key to gpg format
+      command:
+        cmd: gpg --dearmor --output /tmp/signal-desktop-keyring.gpg /tmp/signal-desktop-keys.asc
+    - name: Move keyring to /usr/share/keyrings
+      command: mv /tmp/signal-desktop-keyring.gpg /usr/share/keyrings/signal-desktop-keyring.gpg
+      args:
+        creates: /usr/share/keyrings/signal-desktop-keyring.gpg
+
+    - name: Add Signal repository to apt sources
+      apt_repository:
+        repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/signal-desktop-keyring.gpg] https://updates.signal.org/desktop/apt xenial main"
+        filename: signal-xenial
+        state: present
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install Signal Desktop
+      apt:
+        name: signal-desktop
+        state: present
+  when: "'signal-desktop' not in ansible_facts.packages"

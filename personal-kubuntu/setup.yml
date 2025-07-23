@@ -1,0 +1,11 @@
+- name: Kubuntu Setup
+  hosts: localhost
+  vars_files:
+    - vars/main.yml
+  become: yes
+  roles:
+    - common
+    - brave
+    - vscode
+    - signal
+    - node

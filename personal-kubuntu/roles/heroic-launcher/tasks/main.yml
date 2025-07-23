@@ -1,0 +1,17 @@
+---
+- name: Gather installed package facts
+  package_facts:
+    manager: auto
+
+- name: Install Brave Browser if missing
+  block:
+    - name: Download Heroic Launcher deb
+      get_url:
+        url: https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/releases/download/v2.18.0/Heroic-2.18.0-linux-amd64.deb
+        dest: /tmp/Heroic-2.18.0-linux-amd64.deb
+        mode: "0644"
+
+    - name: Install Heroic Launcher
+      shell: sudo dpkg -i /tmp/Heroic-2.18.0-linux-amd64.deb
+
+  when: "'heroic' not in ansible_facts.packages"

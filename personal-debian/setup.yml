@@ -1,4 +1,4 @@
-- name: Kubuntu Setup
+- name: Debian 13 Setup
   hosts: localhost
   vars_files:
     - vars/main.yml

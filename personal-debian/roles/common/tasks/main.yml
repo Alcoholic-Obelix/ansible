@@ -13,5 +13,6 @@
       - git
       - curl
       - htop
-      - steam
+      - tree
+
     state: present
